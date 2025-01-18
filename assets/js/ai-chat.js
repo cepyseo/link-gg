@@ -266,26 +266,68 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // PWA Installation
     let deferredPrompt;
+
     window.addEventListener('beforeinstallprompt', (e) => {
+        // Varsayılan banner'ı engelle
         e.preventDefault();
+        // Prompt'u daha sonra kullanmak üzere sakla
         deferredPrompt = e;
-        pwaPrompt.style.display = 'block';
+        // Özel PWA prompt'unu göster
+        const pwaPrompt = document.getElementById('pwaPrompt');
+        if (pwaPrompt) {
+            pwaPrompt.style.display = 'block';
+        }
     });
 
-    document.getElementById('pwaInstall').addEventListener('click', async () => {
+    // Yükleme butonuna tıklandığında
+    document.getElementById('pwaInstall')?.addEventListener('click', async () => {
+        const pwaPrompt = document.getElementById('pwaPrompt');
         if (deferredPrompt) {
+            // Prompt'u göster
             deferredPrompt.prompt();
+            // Kullanıcının seçimini bekle
             const { outcome } = await deferredPrompt.userChoice;
+            // Sonucu işle
             if (outcome === 'accepted') {
-                console.log('PWA installed');
+                console.log('Kullanıcı PWA\'yı yükledi');
+            } else {
+                console.log('Kullanıcı PWA\'yı yüklemeyi reddetti');
             }
+            // Prompt'u temizle
             deferredPrompt = null;
+            // Özel prompt'u gizle
+            if (pwaPrompt) {
+                pwaPrompt.style.display = 'none';
+            }
+        }
+    });
+
+    // "Daha Sonra" butonuna tıklandığında
+    document.getElementById('pwaDismiss')?.addEventListener('click', () => {
+        const pwaPrompt = document.getElementById('pwaPrompt');
+        if (pwaPrompt) {
             pwaPrompt.style.display = 'none';
         }
     });
 
-    document.getElementById('pwaDismiss').addEventListener('click', () => {
-        pwaPrompt.style.display = 'none';
+    // Third-party cookie uyarılarını yönetmek için
+    document.addEventListener('DOMContentLoaded', () => {
+        // Çerez tercihlerini kontrol et
+        if (!localStorage.getItem('cookiePreferences')) {
+            const cookieConsent = document.getElementById('cookieConsent');
+            if (cookieConsent) {
+                cookieConsent.style.display = 'flex';
+            }
+        }
+    });
+
+    // Çerez onayı için
+    document.getElementById('acceptCookies')?.addEventListener('click', () => {
+        localStorage.setItem('cookiePreferences', 'accepted');
+        const cookieConsent = document.getElementById('cookieConsent');
+        if (cookieConsent) {
+            cookieConsent.style.display = 'none';
+        }
     });
 
     // Dil Değiştirme
@@ -323,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Emoji Panel İşlevselliği
     const emojis = {
         'Yüzler': ['😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '😉', '😌', '😍', '🥰', '😘'],
-        'El İşaretleri': ['👍', '👎', '👌', '✌️', '🤞', '🤝', '👏', '🙌', '👐', '🤲', '🤝', '🙏'],
+        'El İşaretleri': ['👍', '👎', '👌', '✌️', '🤞', '🤝', '👏', '🙌', '👐', '🤲', '��', '🙏'],
         'Kalpler': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💕', '💞', '💓'],
         'Semboller': ['✨', '⭐', '🌟', '💫', '💥', '💢', '💦', '💨', '🕊️', '💭', '💬']
     };

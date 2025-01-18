@@ -231,8 +231,35 @@
 
         <!-- Cookie Consent -->
         <div class="cookie-consent" id="cookieConsent">
-            <p>Bu site çerezleri kullanmaktadır.</p>
-            <button class="btn btn-primary btn-sm" id="acceptCookies">Kabul Et</button>
+            <div class="cookie-content">
+                <p>Bu site deneyiminizi geliştirmek için çerezleri kullanmaktadır. 
+                   <a href="#" data-bs-toggle="modal" data-bs-target="#cookieModal">Çerez Politikamız</a> hakkında daha fazla bilgi alın.</p>
+                <div class="cookie-buttons">
+                    <button class="btn btn-primary btn-sm" id="acceptCookies">Kabul Et</button>
+                    <button class="btn btn-secondary btn-sm" id="rejectCookies">Reddet</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Çerez Politikası Modal -->
+        <div class="modal fade" id="cookieModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Çerez Politikası</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h6>Bu site hangi çerezleri kullanıyor?</h6>
+                        <ul>
+                            <li><strong>Zorunlu Çerezler:</strong> Sitenin çalışması için gerekli temel çerezler</li>
+                            <li><strong>Analitik Çerezler:</strong> Kullanıcı deneyimini iyileştirmek için kullanım istatistikleri</li>
+                            <li><strong>Tercih Çerezleri:</strong> Dil ve tema gibi kullanıcı tercihlerini hatırlama</li>
+                        </ul>
+                        <p>Çerezler hakkında daha detaylı bilgi için <a href="/privacy-policy">Gizlilik Politikamızı</a> inceleyebilirsiniz.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
