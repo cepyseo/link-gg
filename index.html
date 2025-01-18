@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LinkGG - Link Kısaltma</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -143,9 +144,142 @@
                 font-size: 0.875rem;
             }
         }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card i {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4a5568;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 0.875rem;
+        }
+        
+        .search-bar {
+            margin-bottom: 1rem;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .sort-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .sort-btn {
+            background-color: #edf2f7;
+            color: #4a5568;
+            padding: 0.5rem 1rem;
+        }
+        
+        .sort-btn.active {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .qr-code {
+            display: none;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .copy-btn, .qr-btn {
+            padding: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .copy-btn i, .qr-btn i {
+            margin-right: 0.25rem;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #48bb78;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .export-btn {
+            background-color: #48bb78;
+            margin-bottom: 1rem;
+        }
+        
+        .clear-all-btn {
+            background-color: #f56565;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
+    <div class="stats-container">
+        <div class="stat-card">
+            <i class="fas fa-link"></i>
+            <div class="stat-number" id="totalLinks">0</div>
+            <div class="stat-label">Toplam Link</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-mouse-pointer"></i>
+            <div class="stat-number" id="totalClicks">0</div>
+            <div class="stat-label">Toplam Tıklanma</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-clock"></i>
+            <div class="stat-number" id="todayLinks">0</div>
+            <div class="stat-label">Bugün Oluşturulan</div>
+        </div>
+    </div>
+
     <div class="container">
         <h1>LinkGG</h1>
         <form class="url-form" id="urlForm">
@@ -159,10 +293,23 @@
                 <button onclick="copyToClipboard()">Kopyala</button>
             </div>
         </div>
+        <div class="qr-code" id="qrCode"></div>
     </div>
     
     <div id="linkList">
-        <h2 style="margin-bottom: 1rem;">Kısaltılan Linkler</h2>
+        <div class="toolbar">
+            <input type="text" class="search-bar" id="searchInput" placeholder="Link ara...">
+            <div class="sort-buttons">
+                <button class="sort-btn active" data-sort="date">Tarih</button>
+                <button class="sort-btn" data-sort="clicks">Tıklanma</button>
+            </div>
+        </div>
+        <button class="export-btn" onclick="exportLinks()">
+            <i class="fas fa-download"></i> Linkleri Dışa Aktar
+        </button>
+        <button class="clear-all-btn" onclick="clearAllLinks()">
+            <i class="fas fa-trash"></i> Tüm Linkleri Sil
+        </button>
         <table>
             <thead>
                 <tr>
@@ -176,6 +323,9 @@
         </table>
     </div>
 
+    <div class="toast" id="toast"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         // Link verilerini localStorage'dan al
         function getLinks() {
@@ -240,8 +390,111 @@
             }
         }
 
-        // Sayfa yüklendiğinde hash kontrolü yap
+        // İstatistikleri güncelle
+        function updateStats() {
+            const links = getLinks();
+            const totalLinks = Object.keys(links).length;
+            const totalClicks = Object.values(links).reduce((sum, link) => sum + link.clicks, 0);
+            
+            const today = new Date().toISOString().split('T')[0];
+            const todayLinks = Object.values(links).filter(link => 
+                link.createdAt.startsWith(today)
+            ).length;
+            
+            document.getElementById('totalLinks').textContent = totalLinks;
+            document.getElementById('totalClicks').textContent = totalClicks;
+            document.getElementById('todayLinks').textContent = todayLinks;
+        }
+
+        // Toast mesajı göster
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // QR kod oluştur
+        function generateQRCode(url) {
+            const qrContainer = document.getElementById('qrCode');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: url,
+                width: 128,
+                height: 128
+            });
+            qrContainer.style.display = 'block';
+        }
+
+        // Linkleri dışa aktar
+        function exportLinks() {
+            const links = getLinks();
+            const data = JSON.stringify(links, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `linkgg-export-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Linkler dışa aktarıldı!');
+        }
+
+        // Tüm linkleri sil
+        function clearAllLinks() {
+            if (confirm('Tüm linkleri silmek istediğinizden emin misiniz?')) {
+                localStorage.removeItem('links');
+                updateLinkList();
+                updateStats();
+                showToast('Tüm linkler silindi!');
+            }
+        }
+
+        // Link arama
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.link-row');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Sıralama
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sortType = btn.dataset.sort;
+                const links = getLinks();
+                
+                document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const sortedLinks = Object.entries(links).sort(([, a], [, b]) => {
+                    if (sortType === 'date') {
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    } else {
+                        return b.clicks - a.clicks;
+                    }
+                });
+                
+                const newLinks = {};
+                sortedLinks.forEach(([key, value]) => {
+                    newLinks[key] = value;
+                });
+                
+                saveLinks(newLinks);
+                updateLinkList();
+            });
+        });
+
+        // Sayfa yüklendiğinde istatistikleri güncelle
         window.addEventListener('load', () => {
+            updateStats();
             const hash = window.location.hash.slice(1);
             if (hash) {
                 redirectToUrl(hash);
@@ -249,28 +502,13 @@
             updateLinkList();
         });
 
-        // Form gönderildiğinde
-        document.getElementById('urlForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const longUrl = document.getElementById('longUrl').value;
-            const shortCode = generateShortCode();
-            
-            const links = getLinks();
-            links[shortCode] = {
-                longUrl,
-                clicks: 0,
-                createdAt: new Date().toISOString()
-            };
-            
-            saveLinks(links);
-            
-            const shortUrl = `${window.location.href}#${shortCode}`;
-            document.getElementById('shortUrl').value = shortUrl;
-            document.getElementById('result').style.display = 'block';
-            document.getElementById('longUrl').value = '';
-            
-            updateLinkList();
-        });
+        // Form gönderildiğinde istatistikleri güncelle
+        const originalSubmitHandler = document.getElementById('urlForm').onsubmit;
+        document.getElementById('urlForm').onsubmit = (e) => {
+            originalSubmitHandler(e);
+            updateStats();
+            showToast('Link başarıyla kısaltıldı!');
+        };
 
         // Kopyalama fonksiyonu
         function copyToClipboard() {
