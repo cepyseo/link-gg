@@ -1,522 +1,320 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinkGG - Link Kısaltma</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 1rem;
-        }
-        
-        .container {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 500px;
-            margin-bottom: 2rem;
-        }
-        
-        h1 {
-            text-align: center;
-            color: #4a5568;
-            margin-bottom: 2rem;
-            font-size: 2rem;
-        }
-        
-        .url-form {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        input {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-        
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        button {
-            background-color: #667eea;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        button:hover {
-            background-color: #5a67d8;
-        }
-        
-        #result {
-            display: none;
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background-color: #f7fafc;
-            border-radius: 0.5rem;
-        }
-        
-        .short-url {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        
-        .short-url input {
-            flex: 1;
-            background-color: #edf2f7;
-        }
-        
-        .success-message {
-            color: #48bb78;
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        #linkList {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 800px;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th, td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        th {
-            background: #f8fafc;
-            font-weight: 600;
-            color: #4a5568;
-        }
-        
-        .link-row:hover {
-            background-color: #f7fafc;
-        }
-        
-        .delete-btn {
-            background-color: #fc8181;
-            padding: 0.5rem 1rem;
-        }
-        
-        .delete-btn:hover {
-            background-color: #f56565;
-        }
-        
-        @media (max-width: 640px) {
-            th, td {
-                padding: 0.5rem;
-                font-size: 0.875rem;
-            }
-        }
-        
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .stat-card i {
-            font-size: 2rem;
-            color: #667eea;
-            margin-bottom: 1rem;
-        }
-        
-        .stat-number {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #4a5568;
-        }
-        
-        .stat-label {
-            color: #718096;
-            font-size: 0.875rem;
-        }
-        
-        .search-bar {
-            margin-bottom: 1rem;
-            width: 100%;
-            max-width: 300px;
-        }
-        
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        
-        .sort-buttons {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        .sort-btn {
-            background-color: #edf2f7;
-            color: #4a5568;
-            padding: 0.5rem 1rem;
-        }
-        
-        .sort-btn.active {
-            background-color: #667eea;
-            color: white;
-        }
-        
-        .qr-code {
-            display: none;
-            margin-top: 1rem;
-            text-align: center;
-        }
-        
-        .actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        .copy-btn, .qr-btn {
-            padding: 0.5rem;
-            font-size: 1rem;
-        }
-        
-        .copy-btn i, .qr-btn i {
-            margin-right: 0.25rem;
-        }
-        
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background: #48bb78;
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: none;
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        .export-btn {
-            background-color: #48bb78;
-            margin-bottom: 1rem;
-        }
-        
-        .clear-all-btn {
-            background-color: #f56565;
-            margin-bottom: 1rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="stats-container">
-        <div class="stat-card">
-            <i class="fas fa-link"></i>
-            <div class="stat-number" id="totalLinks">0</div>
-            <div class="stat-label">Toplam Link</div>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-mouse-pointer"></i>
-            <div class="stat-number" id="totalClicks">0</div>
-            <div class="stat-label">Toplam Tıklanma</div>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-clock"></i>
-            <div class="stat-number" id="todayLinks">0</div>
-            <div class="stat-label">Bugün Oluşturulan</div>
-        </div>
-    </div>
-
-    <div class="container">
-        <h1>LinkGG</h1>
-        <form class="url-form" id="urlForm">
-            <input type="url" id="longUrl" placeholder="URL'nizi buraya yapıştırın" required>
-            <button type="submit">Kısalt</button>
-        </form>
-        <div id="result">
-            <p class="success-message">Link başarıyla kısaltıldı!</p>
-            <div class="short-url">
-                <input type="text" id="shortUrl" readonly>
-                <button onclick="copyToClipboard()">Kopyala</button>
-            </div>
-        </div>
-        <div class="qr-code" id="qrCode"></div>
-    </div>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI Solutions - Yapay Zeka Sohbet Asistanı">
+    <meta name="keywords" content="yapay zeka, AI, chatbot, AI asistan">
+    <meta name="author" content="AI Solutions">
+    <title>AI Solutions - Yapay Zeka Asistanı</title>
     
-    <div id="linkList">
-        <div class="toolbar">
-            <input type="text" class="search-bar" id="searchInput" placeholder="Link ara...">
-            <div class="sort-buttons">
-                <button class="sort-btn active" data-sort="date">Tarih</button>
-                <button class="sort-btn" data-sort="clicks">Tıklanma</button>
-            </div>
-        </div>
-        <button class="export-btn" onclick="exportLinks()">
-            <i class="fas fa-download"></i> Linkleri Dışa Aktar
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link href="assets/css/custom.css" rel="stylesheet">
+    
+    <!-- JavaScript -->
+    <script src="assets/js/ai-chat.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" defer></script>
+    
+    <!-- Yeni meta etiketleri -->
+    <meta name="theme-color" content="#6366F1">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" type="image/png" href="./logo.png">
+    <link rel="shortcut icon" type="image/png" href="./logo.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.3/purify.min.js"></script>
+</head>
+
+<body>
+    <!-- Dark Mode Toggle -->
+    <div class="theme-toggle">
+        <button class="btn btn-icon" id="themeToggle">
+            <i class="fas fa-moon"></i>
         </button>
-        <button class="clear-all-btn" onclick="clearAllLinks()">
-            <i class="fas fa-trash"></i> Tüm Linkleri Sil
-        </button>
-        <table>
-            <thead>
-                <tr>
-                    <th>Kısa Link</th>
-                    <th>Orijinal URL</th>
-                    <th>Tıklanma</th>
-                    <th>İşlem</th>
-                </tr>
-            </thead>
-            <tbody id="linkTableBody"></tbody>
-        </table>
     </div>
 
-    <div class="toast" id="toast"></div>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+        <p>AI Solutions Yükleniyor...</p>
+    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script>
-        // Link verilerini localStorage'dan al
-        function getLinks() {
-            const links = localStorage.getItem('links');
-            return links ? JSON.parse(links) : {};
-        }
-
-        // Link verilerini localStorage'a kaydet
-        function saveLinks(links) {
-            localStorage.setItem('links', JSON.stringify(links));
-        }
-
-        // Rastgele kısa kod oluştur
-        function generateShortCode(length = 6) {
-            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            return Array.from(crypto.getRandomValues(new Uint8Array(length)))
-                .map(x => chars[x % chars.length])
-                .join('');
-        }
-
-        // Link listesini güncelle
-        function updateLinkList() {
-            const links = getLinks();
-            const tbody = document.getElementById('linkTableBody');
-            tbody.innerHTML = '';
-
-            Object.entries(links).forEach(([shortCode, data]) => {
-                const row = document.createElement('tr');
-                row.className = 'link-row';
-                row.innerHTML = `
-                    <td>
-                        <a href="#${shortCode}" onclick="redirectToUrl('${shortCode}')" target="_blank">
-                            ${window.location.href}#${shortCode}
-                        </a>
-                    </td>
-                    <td>${data.longUrl}</td>
-                    <td>${data.clicks}</td>
-                    <td>
-                        <button class="delete-btn" onclick="deleteLink('${shortCode}')">Sil</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // Linki sil
-        function deleteLink(shortCode) {
-            const links = getLinks();
-            delete links[shortCode];
-            saveLinks(links);
-            updateLinkList();
-        }
-
-        // URL'e yönlendir ve tıklanma sayısını artır
-        function redirectToUrl(shortCode) {
-            const links = getLinks();
-            if (links[shortCode]) {
-                links[shortCode].clicks++;
-                saveLinks(links);
-                window.location.href = links[shortCode].longUrl;
-                updateLinkList();
-            }
-        }
-
-        // İstatistikleri güncelle
-        function updateStats() {
-            const links = getLinks();
-            const totalLinks = Object.keys(links).length;
-            const totalClicks = Object.values(links).reduce((sum, link) => sum + link.clicks, 0);
+    <!-- Navbar Eklendi -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="./logo.png" alt="AI Solutions Logo" class="rounded-logo me-2">
+                <span class="fw-bold text-primary">AI Solutions</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">Ana Sayfa</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">Hakkımızda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">İletişim</a>
+                    </li>
+                </ul>
+            </div>
             
-            const today = new Date().toISOString().split('T')[0];
-            const todayLinks = Object.values(links).filter(link => 
-                link.createdAt.startsWith(today)
-            ).length;
+            <!-- Dil Seçimi Eklendi -->
+            <div class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                    <i class="fas fa-globe"></i> TR
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" data-lang="tr">Türkçe</a></li>
+                    <li><a class="dropdown-item" href="#" data-lang="en">English</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content-wrapper pt-5">
+        <!-- AI Chat Section -->
+        <section class="wrapper bg-gradient-primary" id="home">
+            <div class="container py-14 py-md-16">
+                <!-- Chat Özellikleri -->
+                <div class="row mb-5">
+                    <div class="col-lg-8 mx-auto text-center">
+                        <h2 class="text-white mb-3">AI Asistan Özellikleri</h2>
+                        <div class="features-grid">
+                            <div class="feature-item">
+                                <i class="fas fa-brain"></i>
+                                <h4>Yapay Zeka</h4>
+                                <p>Gelişmiş AI teknolojisi</p>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-lock"></i>
+                                <h4>Güvenli</h4>
+                                <p>Uçtan uca şifreleme</p>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-bolt"></i>
+                                <h4>Hızlı</h4>
+                                <p>Anında yanıtlar</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Card -->
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <div class="card ai-chat-card">
+                            <div class="card-header bg-primary text-white d-flex align-items-center">
+                                <img src="logo.png" alt="AI Assistant" class="rounded-logo-small me-2">
+                                <h3 class="mb-0">AI Asistan</h3>
+                            </div>
+                            <div class="card-body chat-container" id="chatContainer">
+                                <div class="chat-messages" id="chatMessages">
+                                    <div class="message ai-message">
+                                        <div class="message-content">
+                                            Merhaba! Size nasıl yardımcı olabilirim?
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <form id="chatForm" class="chat-input-form">
+                                    <div class="input-group">
+                                        <input type="text" 
+                                               id="userInput" 
+                                               class="form-control" 
+                                               placeholder="Mesajınızı yazın..."
+                                               autocomplete="off">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- Ek Özellikler -->
+                            <div class="chat-toolbar">
+                                <button class="btn btn-sm btn-icon" id="emojiButton" title="Emoji">
+                                    <i class="far fa-smile"></i>
+                                </button>
+                                <button class="btn btn-sm btn-icon" id="attachButton" title="Dosya Ekle">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <button class="btn btn-sm btn-icon" id="formatButton" title="Metin Formatı">
+                                    <i class="fas fa-text-height"></i>
+                                </button>
+                                <div class="toolbar-divider"></div>
+                                <button class="btn btn-sm btn-icon" id="voiceInput" title="Sesli Mesaj">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <button class="btn btn-sm btn-icon" id="clearChat" title="Sohbeti Temizle">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button class="btn btn-sm btn-icon" id="downloadChat" title="Sohbeti İndir">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Özellikler Bölümü -->
+        <section class="wrapper bg-light" id="features">
+            <div class="container py-14 py-md-16">
+                <div class="row text-center">
+                    <div class="col-md-10 offset-md-1 col-lg-8 offset-lg-2">
+                        <h2 class="fs-16 text-uppercase text-primary mb-3">Özellikler</h2>
+                        <h3 class="display-4 mb-10 px-xl-10">AI Asistanımızın Güçlü Özellikleri</h3>
+                    </div>
+                </div>
+                <div class="row gx-lg-8 gx-xl-12 gy-8">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="feature-box">
+                            <i class="fas fa-robot feature-icon"></i>
+                            <h4>Doğal Dil İşleme</h4>
+                            <p>İnsan diline yakın iletişim</p>
+                        </div>
+                    </div>
+                    <!-- Diğer özellik kutuları -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-dark text-inverse">
+            <div class="container py-13 py-md-15">
+                <div class="row gy-6 gy-lg-0">
+                    <div class="col-md-4 col-lg-3">
+                        <div class="widget">
+                            <div class="d-flex align-items-center mb-4">
+                                <img src="logo.png" alt="AI Solutions Logo" class="rounded-logo-small me-2">
+                                <h3 class="text-white mb-0">AI Solutions</h3>
+                            </div>
+                            <p class="mb-4">© 2024 AI Solutions. <br class="d-none d-lg-block" />Yapay Zeka ile Geleceği Şekillendiriyoruz.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-3">
+                        <div class="widget">
+                            <h4 class="widget-title text-white mb-3">İletişim</h4>
+                            <address>İstanbul, Türkiye</address>
+                            <a href="mailto:info@ai-solutions.com" class="text-white">info@ai-solutions.com</a><br>
+                            <a href="tel:+902121234567" class="text-white">+90 (212) 123 45 67</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            document.getElementById('totalLinks').textContent = totalLinks;
-            document.getElementById('totalClicks').textContent = totalClicks;
-            document.getElementById('todayLinks').textContent = todayLinks;
-        }
+            <!-- Sosyal Medya -->
+            <div class="social-links">
+                <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+            </div>
+        </footer>
 
-        // Toast mesajı göster
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.style.display = 'block';
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 3000);
-        }
+        <!-- Scroll Top Button -->
+        <button class="scroll-top" id="scrollTop">
+            <i class="fas fa-arrow-up"></i>
+        </button>
 
-        // QR kod oluştur
-        function generateQRCode(url) {
-            const qrContainer = document.getElementById('qrCode');
-            qrContainer.innerHTML = '';
-            new QRCode(qrContainer, {
-                text: url,
-                width: 128,
-                height: 128
-            });
-            qrContainer.style.display = 'block';
-        }
+        <!-- Cookie Consent -->
+        <div class="cookie-consent" id="cookieConsent">
+            <p>Bu site çerezleri kullanmaktadır.</p>
+            <button class="btn btn-primary btn-sm" id="acceptCookies">Kabul Et</button>
+        </div>
+    </div>
 
-        // Linkleri dışa aktar
-        function exportLinks() {
-            const links = getLinks();
-            const data = JSON.stringify(links, null, 2);
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `linkgg-export-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('Linkler dışa aktarıldı!');
-        }
+    <!-- PWA Install Prompt -->
+    <div class="pwa-prompt" id="pwaPrompt">
+        <div class="pwa-content">
+            <img src="logo.png" alt="AI Solutions" class="pwa-logo">
+            <p>Uygulamayı yüklemek ister misiniz?</p>
+            <div class="pwa-buttons">
+                <button class="btn btn-primary" id="pwaInstall">Yükle</button>
+                <button class="btn btn-secondary" id="pwaDismiss">Daha Sonra</button>
+            </div>
+        </div>
+    </div>
 
-        // Tüm linkleri sil
-        function clearAllLinks() {
-            if (confirm('Tüm linkleri silmek istediğinizden emin misiniz?')) {
-                localStorage.removeItem('links');
-                updateLinkList();
-                updateStats();
-                showToast('Tüm linkler silindi!');
-            }
-        }
+    <!-- Floating Action Buttons -->
+    <div class="floating-actions">
+        <button class="fab-button" id="shareButton" title="Paylaş">
+            <i class="fas fa-share-alt"></i>
+        </button>
+        <button class="fab-button" id="notificationButton" title="Bildirimler">
+            <i class="fas fa-bell"></i>
+        </button>
+        <button class="fab-button" id="settingsButton" title="Ayarlar">
+            <i class="fas fa-cog"></i>
+        </button>
+    </div>
 
-        // Link arama
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const rows = document.querySelectorAll('.link-row');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
-            });
-        });
+    <!-- Emoji Picker Panel -->
+    <div class="emoji-panel" id="emojiPanel">
+        <!-- Emoji kategorileri ve emojiler buraya gelecek -->
+    </div>
 
-        // Sıralama
-        document.querySelectorAll('.sort-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const sortType = btn.dataset.sort;
-                const links = getLinks();
-                
-                document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                const sortedLinks = Object.entries(links).sort(([, a], [, b]) => {
-                    if (sortType === 'date') {
-                        return new Date(b.createdAt) - new Date(a.createdAt);
-                    } else {
-                        return b.clicks - a.clicks;
-                    }
-                });
-                
-                const newLinks = {};
-                sortedLinks.forEach(([key, value]) => {
-                    newLinks[key] = value;
-                });
-                
-                saveLinks(newLinks);
-                updateLinkList();
-            });
-        });
+    <!-- Format Panel -->
+    <div class="format-panel" id="formatPanel">
+        <button class="format-btn" data-format="bold"><i class="fas fa-bold"></i></button>
+        <button class="format-btn" data-format="italic"><i class="fas fa-italic"></i></button>
+        <button class="format-btn" data-format="code"><i class="fas fa-code"></i></button>
+        <button class="format-btn" data-format="link"><i class="fas fa-link"></i></button>
+    </div>
 
-        // Sayfa yüklendiğinde istatistikleri güncelle
-        window.addEventListener('load', () => {
-            updateStats();
-            const hash = window.location.hash.slice(1);
-            if (hash) {
-                redirectToUrl(hash);
-            }
-            updateLinkList();
-        });
-
-        // Form gönderildiğinde istatistikleri güncelle
-        const originalSubmitHandler = document.getElementById('urlForm').onsubmit;
-        document.getElementById('urlForm').onsubmit = (e) => {
-            originalSubmitHandler(e);
-            updateStats();
-            showToast('Link başarıyla kısaltıldı!');
-        };
-
-        // Kopyalama fonksiyonu
-        function copyToClipboard() {
-            const shortUrlInput = document.getElementById('shortUrl');
-            shortUrlInput.select();
-            document.execCommand('copy');
-            alert('Link kopyalandı!');
-        }
-    </script>
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ayarlar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-section">
+                        <h6>Görünüm</h6>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="darkModeSwitch">
+                            <label class="form-check-label">Karanlık Mod</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="compactModeSwitch">
+                            <label class="form-check-label">Kompakt Görünüm</label>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h6>Ses ve Bildirimler</h6>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="soundSwitch">
+                            <label class="form-check-label">Ses Efektleri</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="notificationSwitch">
+                            <label class="form-check-label">Bildirimler</label>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h6>Dil ve Bölge</h6>
+                        <select class="form-select" id="languageSelect">
+                            <option value="tr">Türkçe</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
-</html> 
+</html>
